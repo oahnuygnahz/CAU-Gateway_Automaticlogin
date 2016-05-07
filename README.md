@@ -6,7 +6,7 @@
 
 ## **如何使用**
 
-- 点击右方Download ZIP按钮，即可将整个项目下载至电脑。
+- 点击上方Download ZIP按钮，即可将整个项目下载至电脑。
 - 解压ZIP文件，打开其中/User目录，点击'login.exe'或‘logout.exe’进行第一次设置(即输入一次账号和密码，这个操作会自动生成配置文件gateway.setup)
 - 以后使用只需点击'login.exe'或'logout.exe'即可自动''登录''或''注销''网关。
 
