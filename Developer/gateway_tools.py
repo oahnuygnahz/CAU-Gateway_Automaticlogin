@@ -206,7 +206,7 @@ def check_wifi():
 	return 2
 
 
-def log():
+def log(choose):
 	if choose == 'login':
 		if check_wifi() > 1:
 			login_gateway_wifi(userid, password)
@@ -237,7 +237,4 @@ userid = list_user[0]
 password = list_user[1]
 
 # Choose login or logout.
-choose = 'login'
-while 1:
-	time.sleep(1)
-	log()
+log(choose='login')
