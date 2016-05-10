@@ -8,8 +8,7 @@ import ssl
 gateway_tools.py
 ~~~~~~~~~~~~~~~~~~~~~~~
 Author: ZhangYunHao
-Version:1.3 for windows
-Time:2016-5-7 12:16
+Version:1.4.0
 
 This module function is provide gateway tools.
 Including all the tools needed to be used.
@@ -20,19 +19,20 @@ Select function 'login' or 'logout' by change variable 'Choose' at the end of pr
 ssl._create_default_https_context = ssl._create_unverified_context
 
 
-def url_read(url, timeout=1, sleep=1):
-	"""Read URL content.Also slove delay mistake and print error's reason."""
+def url_read(url):
 	request = urllib2.Request(url)
 
+	cj = cookielib.LWPCookieJar()
+	cookie_support = urllib2.HTTPCookieProcessor(cj)
+	opener = urllib2.build_opener(cookie_support, urllib2.HTTPHandler)
+	urllib2.install_opener(opener)
+
 	try:
-		response = urllib2.urlopen(request, timeout=timeout)
+		response = opener.open(request, timeout=5)
 	except urllib2.URLError, e:
-		print time.strftime('%Y-%m-%d %X', time.localtime(time.time()))
-		print e.reason
-		print 'url_read Error:Please check your network connection !!!'
-		time.sleep(sleep)
-		url_read(url)
-		return 0
+		print 'url_read() error!'
+		print e
+		return 'Error'
 
 	result = response.read()
 
@@ -47,6 +47,31 @@ def login_gateway_test(userid, password):
 	flag = url_read(url_login).find('Redirecting')
 
 	return flag
+
+
+def login_gateway_test_wifi(username, password):
+	data = {
+		"DDDDD": username,
+		"upass": password,
+		"0MKKey": ""
+	}
+
+	headers = {
+		'Host': '202.205.80.9',
+		'Origin': 'http://202.205.80.9',
+		'Referer': 'http://202.205.80.9/0.htm',
+		'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36'
+	}
+
+	#  Encode post_data to specific format.
+	post_data = urllib.urlencode(data)
+	#  Login_url.
+	login_url = 'http://202.205.80.9/0.htm'
+
+	request = urllib2.Request(login_url, post_data, headers)
+	result = urllib2.urlopen(request)
+
+	return result.read().find('width=1024')
 
 
 def login_gateway(userid, password):
@@ -73,9 +98,7 @@ def login_gateway(userid, password):
 
 
 def logout_gateway():
-	url_logout = 'http://202.205.80.10/F.htm'
-	request = urllib2.Request(url_logout)
-	urllib2.urlopen(request)
+	url_read('http://202.205.80.10/F.htm')
 
 
 def login_gateway_wifi(username, password):
@@ -99,49 +122,12 @@ def login_gateway_wifi(username, password):
 	#  Login_url.
 	login_url = 'http://202.205.80.9/0.htm'
 
-	# Create cookie processor to save cookie for next url.
-	cj = cookielib.LWPCookieJar()
-	cookie_support = urllib2.HTTPCookieProcessor(cj)
-	opener = urllib2.build_opener(cookie_support, urllib2.HTTPHandler)
-	urllib2.install_opener(opener)
-
 	request = urllib2.Request(login_url, post_data, headers)
 	urllib2.urlopen(request)
-
-	opener.open('http://202.205.80.9/1.htm')
 
 
 def logout_gateway_wifi(username, password):
-	"""" use username and password to logout WIFI gateway."""
-
-	data = {
-		"DDDDD": username,
-		"upass": password,
-		"0MKKey": ""
-	}
-
-	headers = {
-		'Host': '202.205.80.9',
-		'Origin': 'http://202.205.80.9',
-		'Referer': 'http://202.205.80.9/0.htm',
-		'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36'
-	}
-
-	#  Encode post_data to specific format
-	post_data = urllib.urlencode(data)
-	#  Login_url
-	login_url = 'http://202.205.80.9/0.htm'
-
-	# Create cookie processor to save cookie for next url.
-	cj = cookielib.LWPCookieJar()
-	cookie_support = urllib2.HTTPCookieProcessor(cj)
-	opener = urllib2.build_opener(cookie_support, urllib2.HTTPHandler)
-	urllib2.install_opener(opener)
-
-	request = urllib2.Request(login_url, post_data, headers)
-	urllib2.urlopen(request)
-
-	opener.open('http://202.205.80.9/F.htm')
+	url_read('http://202.205.80.9/F.htm')
 
 
 def text_save(content, filename, mode='a'):
@@ -195,6 +181,24 @@ def set():
 		return 0
 
 
+def set_wifi():
+	"""Create a setup file to save user's id and password."""
+	print 'Please set up your userid and password.(Press enter to end input)'
+
+	userid = raw_input('Please input your userid:')
+	password = raw_input('Please input your password:')
+
+	if login_gateway_test_wifi(userid, password) > 1:
+		print 'Settings succeeded'
+		list_t = [userid, password]
+		text_save(list_t, 'gateway.setup', mode='w')
+	if login_gateway_test_wifi(userid, password) < 1:
+		print 'Failed to login,please check your input!'
+		print '                           '
+		set_wifi()
+		return 0
+
+
 def check_wifi():
 	"""Test network is cable network or WIFI"""
 	url = 'http://202.205.80.9/0.htm'
@@ -225,7 +229,10 @@ def log(choose):
 
 # Check setup.
 if check_set() < 1:
-	set()
+	if check_wifi() > 1:
+		set_wifi()
+	else:
+		set()
 else:
 	print 'Successful read setup......'
 
