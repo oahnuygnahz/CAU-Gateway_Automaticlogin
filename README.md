@@ -1,6 +1,8 @@
 # 中国农大网关自动登录
 
-作者：张云浩    QQ : 3358023393(新)
+作者：张云浩    QQ : 3358023393(新)		
+
+关键词 ：China Agricultural University gateway_automaticlogin，中国农业大学
 
 ## **特性**
 
