@@ -8,7 +8,7 @@ import ssl
 gateway_tools.py
 ~~~~~~~~~~~~~~~~~~~~~~~
 Author: ZhangYunHao
-Version:1.5.0
+Version:1.5.1
 
 This module function is provide gateway tools.
 Including all the tools needed to be used.
@@ -239,12 +239,21 @@ def auto_log(choose):
         time.sleep(0.5)
 
     try:
+        check_network()
         log(choose=choose)
     except Exception:
         print 'Network is unreachable,check your network! Auto reconnect! connect timer: %s' % connection_timer
         connection_timer = connection_timer + 1
         auto_log(choose=choose)
         return 0
+
+
+def check_network():
+    """ Test network."""
+
+    url_read('http://202.205.80.154')
+
+    return 1
 
 
 # Check setup.
@@ -264,4 +273,4 @@ userid = list_user[0]
 password = list_user[1]
 
 # Choose login or logout.
-auto_log(choose='logout')
+auto_log(choose='login')
